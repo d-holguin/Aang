@@ -1,13 +1,10 @@
 <h2 align="center">
   <img src="/assets/aang-32.png" width="28" height="28" alt="Aang Logo" />
-  AANG
+  Aang
 </h2>
 
-A **micro JavaScript single-page application framework** built with **Web Components**.
 
-
-
-## AANG is a micro java script single page application framework using webcomponents 
+## Aang is a micro java script single page application framework using webcomponents 
 
 
 
