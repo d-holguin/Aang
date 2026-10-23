@@ -1,5 +1,11 @@
 export type RouteTable = Record<string, string>;
 
+export interface NavigationDetail {
+  url: URL;
+  path: string;
+  query: URLSearchParams;
+}
+
 export class Router {
   private readonly routes: RouteTable;
   private readonly outlet: HTMLElement;
@@ -15,6 +21,10 @@ export class Router {
 
     const destination = new URL(anchor.href, window.location.href);
     if (destination.origin !== window.location.origin) return;
+    if (
+      destination.pathname === window.location.pathname &&
+      destination.search === window.location.search
+    ) return; // Let the browser handle in-page hash links and same-page links.
 
     event.preventDefault();
     this.navigate(`${destination.pathname}${destination.search}${destination.hash}`);
@@ -52,29 +62,43 @@ export class Router {
   }
 
   private resolve(): void {
-    const path = window.location.pathname.replace(/\/$/, "") || "/";
+    const url = new URL(window.location.href);
+    const path = this.normalizePath(url.pathname);
+    const tagName = this.routes[path] ?? this.routes["/404"];
+
+    if (!tagName) {
+      this.outlet.dispatchEvent(new CustomEvent("aang:routeerror", {
+        detail: { path, url },
+        bubbles: true,
+      }));
+      return;
+    }
+
+    const detail: NavigationDetail = { url, path, query: url.searchParams };
+    this.outlet.dispatchEvent(new CustomEvent<NavigationDetail>("aang:navigate", { detail, bubbles: true }));
     if (path === this.currentPath) return;
     this.currentPath = path;
-
-    const tagName = this.routes[path] ?? this.routes["/"];
-    if (tagName) void this.renderView(tagName);
+    void this.renderView(tagName);
   }
 
   private async renderView(tagName: string): Promise<void> {
     const view = this.outlet.querySelector<HTMLElement>("#view");
     if (!view) return;
 
-    const renderId = String(++this.renderSequence);
-    view.dataset.renderId = renderId;
+    const renderId = ++this.renderSequence;
     view.classList.add("fade-out");
     await new Promise<void>((resolve) => window.setTimeout(resolve, 150));
-    if (view.dataset.renderId !== renderId || !view.isConnected) return;
+    if (renderId !== this.renderSequence || !view.isConnected) return;
 
     view.replaceChildren(document.createElement(tagName));
     requestAnimationFrame(() => {
-      if (view.dataset.renderId === renderId) view.classList.remove("fade-out");
+      if (renderId === this.renderSequence) view.classList.remove("fade-out");
     });
   }
 
   private renderSequence = 0;
+
+  private normalizePath(path: string): string {
+    return path.replace(/\/$/, "") || "/";
+  }
 }

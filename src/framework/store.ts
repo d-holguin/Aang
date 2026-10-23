@@ -17,6 +17,10 @@ export class Store<State extends object> {
     this.notify();
   }
 
+  update(updater: (state: Readonly<State>) => Partial<State>): void {
+    this.setState(updater(this.state));
+  }
+
   subscribe(listener: StoreListener<State>): () => void {
     this.listeners.add(listener);
     listener(this.state);
@@ -28,9 +32,3 @@ export class Store<State extends object> {
     [...this.listeners].forEach((listener) => listener(this.state));
   }
 }
-
-export interface GlobalState {
-  count: number;
-}
-
-export const globalStore = new Store<GlobalState>({ count: 0 });

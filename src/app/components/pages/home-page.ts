@@ -1,4 +1,5 @@
-import { globalStore, Store, type GlobalState } from "../../core/store";
+import { Store } from "../../../framework/store";
+import { appStore } from "../../store";
 
 interface LocalState {
   count: number;
@@ -17,8 +18,15 @@ class HomePage extends HTMLElement {
 
   connectedCallback(): void {
     if (this.unsubscribeLocal || this.unsubscribeGlobal) return;
-    this.unsubscribeLocal = this.localStore.subscribe((local) => this.render(local, globalStore.getState()));
-    this.unsubscribeGlobal = globalStore.subscribe((global) => this.render(this.localStore.getState(), global));
+    this.renderShell();
+    this.unsubscribeLocal = this.localStore.subscribe(() => this.updateCounters());
+    this.unsubscribeGlobal = appStore.subscribe(() => this.updateCounters());
+    this.root.querySelector<HTMLButtonElement>("#incLocal")?.addEventListener("click", () => {
+      this.localStore.update((state) => ({ count: state.count + 1 }));
+    });
+    this.root.querySelector<HTMLButtonElement>("#incGlobal")?.addEventListener("click", () => {
+      appStore.update((state) => ({ count: state.count + 1 }));
+    });
   }
 
   disconnectedCallback(): void {
@@ -28,7 +36,7 @@ class HomePage extends HTMLElement {
     this.unsubscribeGlobal = undefined;
   }
 
-  private render(localState: Readonly<LocalState>, globalState: Readonly<GlobalState>): void {
+  private renderShell(): void {
     this.root.innerHTML = `
       <style>
         #homeContainer {
@@ -56,8 +64,8 @@ class HomePage extends HTMLElement {
       </style>
       <section id="homeContainer">
         <h1>Welcome to Aang!</h1>
-        <button id="incLocal" type="button">Local Counter (per component): ${localState.count}</button>
-        <button id="incGlobal" type="button">Global Counter (shared): ${globalState.count}</button>
+        <button id="incLocal" type="button">Local Counter (per component): <span id="localCount"></span></button>
+        <button id="incGlobal" type="button">Global Counter (shared): <span id="globalCount"></span></button>
         <div style="font-size: 12px; color: #4A90E2;">
           <p>
             Navigate to <a href="/about" data-link style="text-decoration: underline; color: inherit;">/about</a>
@@ -66,13 +74,14 @@ class HomePage extends HTMLElement {
         </div>
       </section>
     `;
+    this.updateCounters();
+  }
 
-    this.root.querySelector<HTMLButtonElement>("#incLocal")?.addEventListener("click", () => {
-      this.localStore.setState({ count: this.localStore.getState().count + 1 });
-    });
-    this.root.querySelector<HTMLButtonElement>("#incGlobal")?.addEventListener("click", () => {
-      globalStore.setState({ count: globalStore.getState().count + 1 });
-    });
+  private updateCounters(): void {
+    const localCount = this.root.querySelector<HTMLElement>("#localCount");
+    const globalCount = this.root.querySelector<HTMLElement>("#globalCount");
+    if (localCount) localCount.textContent = String(this.localStore.getState().count);
+    if (globalCount) globalCount.textContent = String(appStore.getState().count);
   }
 }
 

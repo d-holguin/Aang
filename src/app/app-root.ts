@@ -1,7 +1,5 @@
-import { Router } from "./router";
-import "../components/pages/home-page";
-import "../components/pages/about-page";
-import "../components/navbar";
+import { Router } from "../framework/router";
+import { routes } from "./routes";
 
 class AppRoot extends HTMLElement {
   private router?: Router;
@@ -9,13 +7,7 @@ class AppRoot extends HTMLElement {
   connectedCallback(): void {
     if (this.router) return;
     this.render();
-    this.router = new Router(
-      {
-        "/": "home-page",
-        "/about": "about-page",
-      },
-      this,
-    );
+    this.router = new Router(routes, this);
   }
 
   disconnectedCallback(): void {
@@ -32,9 +24,12 @@ class AppRoot extends HTMLElement {
           transition: opacity 0.15s ease-in-out;
         }
         #view.fade-out { opacity: 0; }
+        @media (prefers-reduced-motion: reduce) {
+          #view { transition: none; }
+        }
       </style>
       <app-navbar></app-navbar>
-      <main id="view"></main>
+      <main id="view" aria-live="polite"></main>
     `;
   }
 }
