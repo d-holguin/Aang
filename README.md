@@ -1,26 +1,30 @@
-<h2 align="center">
-  <img src="/assets/aang-32.png" width="28" height="28" alt="Aang Logo" />
-  Aang
-</h2>
+# Aang
 
+Aang is a small single page application framework experiment built on native Web Components. It includes a typed observable store and a lightweight history router.
 
-## Aang is a micro java script single page application framework using webcomponents 
+## Development
 
+Use Node.js 20.19+ or 22.12+, install dependencies, and start the Vite development server:
 
+```sh
+npm install
+npm run dev
+```
 
-Using this mostly as notes and quick references.
+The app is served at the local URL printed by Vite. The `/` and `/about` routes work in development, including direct navigation and browser back/forward.
 
-https://developer.mozilla.org/en-US/docs/Web/API/Web_components
-https://game-icons.net/1x1/lorc/air-zigzag.html
+## Scripts
 
-##### Colors used
-#4A90E2
-#FFF8E7
+- `npm run dev` starts Vite.
+- `npm run typecheck` checks TypeScript without emitting files.
+- `npm run build` type checks and creates a production bundle in `dist/`.
+- `npm run preview` serves the production bundle locally.
 
-Prettier used for formatting.
+## Structure
 
-Using whatever server or host is configured for Aang needs to redirect unknow paths to root index.html
-`npx http-server . -P http://localhost:8080?`
-Without cache 
-`npx http-server . -P http://localhost:8080? -c-1`
+- `src/core/router.ts` handles `data-link` navigation, browser history, and route rendering.
+- `src/core/store.ts` provides typed local/global state with subscriptions and cleanup functions.
+- `src/components/` contains the custom elements.
+- `src/main.ts` loads global styles and registers the app root.
 
+For static hosting, configure the host to serve `index.html` for unknown paths. The included `public/404.html` fallback is copied into `dist/` and restores the original path on GitHub Pages.
