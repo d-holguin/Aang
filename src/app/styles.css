@@ -1,13 +1,20 @@
-*, *::before, *::after {
-  box-sizing: border-box;
-}
+*, *::before, *::after { box-sizing: border-box; }
 
-html {
-  font-size: 100%;
-}
-
-body {
-  margin: 0;
+:root {
+  color-scheme: light;
   font-family: system-ui, sans-serif;
-  background-color: #1e1e1e;
+  font-size: 100%;
+  background: #f7f6f0;
+  color: #203a35;
+}
+
+html { min-width: 320px; scroll-behavior: smooth; }
+body { min-width: 320px; min-height: 100vh; margin: 0; background: #f7f6f0; }
+app-root { display: block; }
+button, input { font: inherit; }
+::selection { background: #d9e8dc; color: #203a35; }
+:focus-visible { outline: 3px solid #789f8e; outline-offset: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; }
 }

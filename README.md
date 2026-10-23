@@ -1,76 +1,47 @@
 # Aang
 
-Aang is a small application toolkit built on native Web Components. It adds a typed store and a history router, while leaving component structure, rendering, attributes, events, and styling in the browser's hands.
+Aang is a small application toolkit built on native Web Components. The demo is **The Windward**, an independent editorial journal with story browsing, search, topic filters, article pages, and a saved reading list.
 
-## Development
+## Run locally
 
-Use Node.js 20.19+ or 22.12+, then install dependencies and start Vite:
+Use Node.js 20.19+ or 22.12+, then:
 
 ```sh
 npm install
 npm run dev
 ```
 
-The demo has `/`, `/about`, and a not-found page. Vite serves the app locally and falls back to `index.html` for direct route visits.
-
-## Project commands
+Available project commands:
 
 - `npm run dev` starts the Vite development server.
 - `npm run typecheck` checks TypeScript without emitting files.
 - `npm run build` type checks and creates a production bundle in `dist/`.
 - `npm run preview` serves the production bundle locally.
 
-## What Aang provides
+## Try the demo
 
-- Native autonomous custom elements registered with `customElements.define()`.
-- A history router. Routes map exact paths to custom element names; trailing slashes are ignored. Mark internal links with `data-link`. The router handles browser back/forward, keeps query-only navigation from remounting a page, and emits a bubbling `aang:navigate` event with `{ url, path, query }` detail.
-- A small typed `Store<State>` with `getState()`, `setState(partial)`, `update(fn)`, and `subscribe(fn)`. `subscribe` immediately emits the current state and returns an unsubscribe function.
-- A static-host fallback at `public/404.html`, copied to the production bundle. The current router assumes the app is mounted at the domain root; GitHub Pages project sites under `/<repository>/` will need a configurable base path before deployment.
+- Search stories and filter by topic on the home page.
+- Open a story at `/stories/:slug`.
+- Save stories, then visit `/saved`. The reading list is persisted in local storage.
+- Use browser back and forward, or open a story URL directly.
 
-There is no template compiler or automatic change detection. A component decides what to render and when to update it. The counter page keeps its DOM and updates only the two text nodes, which is a useful default for forms and interactive widgets too.
-
-## Component pattern
-
-Use the normal custom element lifecycle. Put one-time DOM creation in `connectedCallback()`, subscribe to external state there, and release subscriptions in `disconnectedCallback()`. A component that needs encapsulated styles can attach a shadow root; simple layout elements can stay in light DOM. Both are normal Web Components.
-
-```ts
-import { Store } from "../../framework"; // from src/app/components/
-
-const someStore = new Store({ title: "Hello" });
-
-class ExampleCard extends HTMLElement {
-  private unsubscribe?: () => void;
-
-  connectedCallback(): void {
-    this.innerHTML = `<h2></h2>`;
-    this.unsubscribe = someStore.subscribe(({ title }) => {
-      this.querySelector("h2")!.textContent = title;
-    });
-  }
-
-  disconnectedCallback(): void {
-    this.unsubscribe?.();
-    this.unsubscribe = undefined;
-  }
-}
-
-customElements.define("example-card", ExampleCard);
-```
-
-Use `textContent` for dynamic text. Treat strings passed to `innerHTML` as markup, not as a safe way to display user-provided values.
+The demo is designed to exercise app needs that can reveal gaps in Aang: route parameters, reusable custom elements, component-local UI state, shared persistent state, nested shadow DOM events, empty states, responsive layouts, and accessibility basics.
 
 ## Structure
 
-- `src/framework/` contains the reusable router and store. Import them from `src/framework/index.ts`.
-- `src/app/` contains this demo site's root, route table, state, and custom elements.
-- `src/app/routes.ts` is the place to register page elements and map URL paths to them.
-- `src/app/components/pages/` contains route-level page elements; shared site chrome such as the navbar lives in `src/app/components/`.
-- `src/app/main.ts` is the Vite entry point for the demo site.
+- `src/framework/` contains the reusable router and store, exported from `src/framework/index.ts`.
+- `src/app/` contains the Windward site: route setup, shared state, data, custom elements, styles, and assets.
+- `src/app/routes.ts` is the app's route table and element registration point.
+- `src/app/data/stories.ts` is the demo content source. A later data adapter can replace it without changing the component model.
+- `src/app/components/story-card.ts` and `story-grid.ts` demonstrate reusable custom elements.
+- `src/app/main.ts` is the Vite entry point.
 
-This boundary is ready for a larger demo without making the framework responsible for the site's content. For a blog, add post data under `src/app/data/`, then add blog list/detail page elements and routes under `src/app/`. Route parameters are not implemented yet; choose the blog URLs first, then add only the matching support the router needs.
+## Framework shape
 
-## Direction
+Aang deliberately leaves rendering to the component author. It has no template compiler or automatic change detection: components use standard custom element lifecycle callbacks and update the DOM they own. `Store<State>` handles shared state; input search and category filters stay local to the story grid. The router supports exact paths and `:parameter` segments, preserves query strings, and emits bubbling `aang:navigate` and `aang:routechange` events.
 
-The useful core is likely to stay small: custom-element lifecycle conventions, a router, a typed store, and examples. Keep ordinary HTML as the composition layer, use `<template>` and `<slot>` when they solve a real reuse or composition need, and avoid adding a virtual DOM, decorators, dependency injection, or a custom template syntax without a clear use case. Those features would add a second component model on top of the browser's.
+The router accepts an optional `basePath`; the demo passes Vite's `import.meta.env.BASE_URL` and uses `routeHref()` for app links. This supports domain-root deployments and project sites mounted under a path when Vite's `base` is configured. The included `public/404.html` fallback handles direct navigation on static hosts.
 
-Good next steps are a blog example that exercises list/detail pages and real data, plus router coverage for nested paths, query strings, hash links, and history. More advanced options such as lazy-loaded elements can wait until an app needs them.
+`Router.navigate(path)` accepts an app route such as `/stories/example`. It preserves query strings and hashes, applies the configured base path, and emits `aang:navigate` for every resolved URL. When only the path stays the same, the active page receives `aang:routechange`, including query changes. Route parameters are decoded before they are assigned as attributes. Static route segments take precedence over parameters at the same position.
+
+The demo's `<app-root>` exposes `navigate(path)` for programmatic navigation. `Store<State>` performs shallow merges and freezes its top-level state object. Treat nested values as immutable and replace them when updating; each subscription is called immediately, and a failing listener is logged without blocking other listeners.
