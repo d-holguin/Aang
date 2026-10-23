@@ -7,7 +7,7 @@ class NotFoundPage extends HTMLElement {
   }
 
   connectedCallback(): void {
-    document.title = "Page not found — The Windward";
+    document.title = "Page not found - The Windward";
     const root = this.shadowRoot;
     if (!root) return;
     root.innerHTML = `

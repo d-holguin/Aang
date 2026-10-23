@@ -32,15 +32,17 @@ The demo is designed to exercise app needs that can reveal gaps in Aang: route p
 - `src/framework/` contains the reusable router and store, exported from `src/framework/index.ts`.
 - `src/app/` contains the Windward site: route setup, shared state, data, custom elements, styles, and assets.
 - `src/app/routes.ts` is the app's route table and element registration point.
-- `src/app/data/stories.ts` is the demo content source. A later data adapter can replace it without changing the component model.
-- `src/app/components/story-card.ts` and `story-grid.ts` demonstrate reusable custom elements.
+- `src/app/data/stories.ts` contains story metadata; `src/app/content/stories/*.md` contains article prose.
+- `src/app/components/story-card/` and `src/app/components/pages/story-page/` show the split component pattern: behavior in TypeScript, static markup in sibling HTML files, and shadow styles in sibling CSS files.
+- Vite imports component HTML with `?raw` and processed CSS with `?inline`; story Markdown and Marked are loaded only when an article opens. The Markdown files are trusted project content. Sanitize rendered HTML before using content from users or other untrusted sources. [Vite import options](https://vite.dev/guide/assets), [Vite CSS imports](https://vite.dev/guide/features.html)
+- `src/app/components/story-grid.ts` demonstrates reusable custom elements.
 - `src/app/main.ts` is the Vite entry point.
 
 ## Framework shape
 
 Aang deliberately leaves rendering to the component author. It has no template compiler or automatic change detection: components use standard custom element lifecycle callbacks and update the DOM they own. `Store<State>` handles shared state; input search and category filters stay local to the story grid. The router supports exact paths and `:parameter` segments, preserves query strings, and emits bubbling `aang:navigate` and `aang:routechange` events.
 
-The router accepts an optional `basePath`; the demo passes Vite's `import.meta.env.BASE_URL` and uses `routeHref()` for app links. This supports domain-root deployments and project sites mounted under a path when Vite's `base` is configured. The included `public/404.html` fallback handles direct navigation on static hosts.
+The router accepts an optional `basePath`; the demo passes Vite's `import.meta.env.BASE_URL` and uses `routeHref()` for app links. Vite uses `/` for local builds and derives the project prefix from `GITHUB_REPOSITORY` in GitHub Actions. For a manual project-site build, set `AANG_BASE_PATH=/Aang/ npm run build`. The generated `404.html` fallback handles direct navigation on static hosts.
 
 `Router.navigate(path)` accepts an app route such as `/stories/example`. It preserves query strings and hashes, applies the configured base path, and emits `aang:navigate` for every resolved URL. When only the path stays the same, the active page receives `aang:routechange`, including query changes. Route parameters are decoded before they are assigned as attributes. Static route segments take precedence over parameters at the same position.
 

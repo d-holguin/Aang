@@ -1,5 +1,6 @@
 import { categories, stories, type Story, type StoryCategory } from "../data/stories";
 import { appStore } from "../store";
+import "./story-card/story-card";
 
 class StoryGrid extends HTMLElement {
   private readonly root: ShadowRoot;

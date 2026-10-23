@@ -1,6 +1,21 @@
 import { defineConfig, type Plugin } from "vite";
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { cwd, env } from "node:process";
+
+function getBasePath(): string {
+  const configuredBase = env.AANG_BASE_PATH;
+  if (configuredBase) return configuredBase.endsWith("/") ? configuredBase : `${configuredBase}/`;
+
+  const [owner, repository] = env.GITHUB_REPOSITORY?.split("/") ?? [];
+  const hasCustomDomain = existsSync(resolve(cwd(), "CNAME"))
+    || existsSync(resolve(cwd(), "public/CNAME"));
+  const isProjectSite = env.GITHUB_ACTIONS === "true"
+    && repository
+    && !hasCustomDomain
+    && repository.toLowerCase() !== `${owner}.github.io`.toLowerCase();
+  return isProjectSite ? `/${repository}/` : "/";
+}
 
 function configureStaticFallback(): Plugin {
   let basePath = "/";
@@ -21,5 +36,6 @@ function configureStaticFallback(): Plugin {
 }
 
 export default defineConfig({
+  base: getBasePath(),
   plugins: [configureStaticFallback()],
 });

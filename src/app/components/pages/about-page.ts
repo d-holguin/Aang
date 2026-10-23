@@ -5,7 +5,7 @@ class AboutPage extends HTMLElement {
   }
 
   connectedCallback(): void {
-    document.title = "About — The Windward";
+    document.title = "About - The Windward";
     const root = this.shadowRoot;
     if (!root) return;
     root.innerHTML = `

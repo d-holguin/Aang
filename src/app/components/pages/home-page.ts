@@ -1,7 +1,6 @@
 import { featuredStory, formatDate } from "../../data/stories";
 import { toggleSavedStory, appStore } from "../../store";
 import { routeHref } from "../../base-path";
-import "../story-card";
 import "../story-grid";
 
 class HomePage extends HTMLElement {
@@ -14,7 +13,7 @@ class HomePage extends HTMLElement {
   }
 
   connectedCallback(): void {
-    document.title = "Stories for a more attentive world — The Windward";
+    document.title = "Stories for a more attentive world - The Windward";
     this.root.innerHTML = `
       <style>
         :host { display: block; color: #203a35; }
@@ -71,7 +70,7 @@ class HomePage extends HTMLElement {
             <p class="feature-meta"></p>
             <div class="feature-actions"><a class="read-link" data-link>Read the story <span aria-hidden="true">→</span></a><button class="save-feature" type="button"></button></div>
           </div>
-          <div class="feature-art" aria-hidden="true"><span class="wind-mark">∿</span><span class="art-caption">No. 06 — High country</span></div>
+          <div class="feature-art" aria-hidden="true"><span class="wind-mark">∿</span><span class="art-caption">No. 06: High country</span></div>
         </article>
         <section aria-labelledby="latest-title">
           <div class="section-heading"><h2 id="latest-title">The latest</h2><p>Good things to spend a few minutes with.</p></div>

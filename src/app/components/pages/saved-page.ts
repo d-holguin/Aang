@@ -7,7 +7,7 @@ class SavedPage extends HTMLElement {
   }
 
   connectedCallback(): void {
-    document.title = "Your reading list — The Windward";
+    document.title = "Your reading list - The Windward";
     const root = this.shadowRoot;
     if (!root) return;
     root.innerHTML = `
